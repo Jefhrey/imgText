@@ -1,5 +1,5 @@
 import { useState } from 'react'
-// import hero from './assets/hero.png'
+import hero from './assets/hero.png'
 const NAVBAR_ITEMS = ["Login"]
 export default function App(){
   return(
@@ -31,8 +31,8 @@ function NavbarItems({navItems}){
   )
 }
 function Content(){
-  const [image, setImage] = useState(null);
-  const [text, setText] = useState("");
+  const [image, setImage] = useState(hero);
+  const [text, setText] = useState("Lorem, ipsum dolor sit amet consectetur adipisicing elit. Consectetur, blanditiis delectus. Facilis saepe voluptate mollitia, minima repellat repellendus nam recusandae doloribus neque perspiciatis, dolorem voluptas.");
   const [loading, setLoading] = useState(false)
 
   async function uploadImage(e)
@@ -43,19 +43,21 @@ function Content(){
     formData.append("image", file)
     setLoading(true);
     let text = await getText(formData); 
+    console.log(text)
     setText(text);
     setLoading(false);
   }
 
   async function getText(formData)
   {
-    let response = await fetch("http://localhost:8000/api/ocr/", {
+    let response = await fetch("http://localhost:8000/api/", {
       method: "POST",
       body: formData
     });
 
     const data = await response.json();
-    return data.text;
+    console.log("Received data: ", data);
+    return data.message;
   }
 
   return(
@@ -71,7 +73,7 @@ function Image({image, uploadImage}){
   if(!image){
   return(
     <>
-    <label  htmlFor="imgUpload" className="mx-4 p-2 bg-blue-500 text-white rounded hover:bg-blue-700 hover:scale-110 transition duration-500 ease-in-out">
+    <label  htmlFor="imgUpload" className="bg-blue-500 mx-4 p-2  text-white rounded hover:bg-blue-700 hover:scale-110 transition duration-500 ease-in-out">
     Upload file
     </label>
     <input onChange = {uploadImage} type="file" id="imgUpload" className = "hidden"/>
@@ -86,19 +88,22 @@ function Image({image, uploadImage}){
 }
 
 
-function ResultText({image, text, loading}){
+function ResultText({ image, text, loading }) {
   if (!image) return null;
-  if (image && !loading)
-  {
-    return(
-      <p className = "px-4 mx-4">Loading...</p>
-    )
+
+  if (loading) {
+    return (
+      <p className="px-4 mx-4 textLimit">
+        Loading...
+      </p>
+    );
   }
-  return(
-  <p className = "px-4 mx-4">
-    {text}
-  </p>
-  )
+
+  return (
+    <p className="px-4 mx-4 textLimit">
+      {text}
+    </p>
+  );
 }
 
 // Content is empty on initial load

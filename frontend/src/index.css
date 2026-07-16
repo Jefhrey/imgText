@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,200..900;1,200..900&family=Finlandica+Headline:ital,wght@0,100..900;1,100..900&family=Space+Grotesk:wght@300..700&display=swap');
 
 :root{
     --bg-dark: oklch(0.92 0 20);
@@ -15,7 +16,7 @@
 
 body{
     /* background: linear-gradient(var(--text), var(--text-muted)); */
-    background: black;
+    background: rgba(0, 0, 0, 0.942);
 
 }
 
@@ -23,7 +24,7 @@ body{
     /* background-color: var(--text);  */
     /* aspect-ratio: 900/600; */
     min-width: 100%;
-    height: 160px;
+    height: 140px;
     background-repeat: no-repeat;
     background-position: center;
     background-size: cover;
@@ -32,7 +33,7 @@ body{
     justify-content: end;
     align-items: center;
     padding-right: 1rem;
-    padding-bottom: 3rem; 
+    /* padding-bottom: 3rem;  */
     color: white;
 }
 
@@ -93,40 +94,44 @@ body{
     flex-direction:column;
     flex:1;
     justify-content:center;
-    align-items:center;
+    align-items:stretch;
 }
 
 @media (min-width: 640px) {
   .defaultMobile {
     flex-direction:row;
-    flex: 1;
   }
 }
 
-.primaryButton {
-    display: inline-block;
-
+/* .primaryButton {
+    display: block;
     padding: 0.5rem 1rem;
     border: 2px solid transparent;
     border-radius: 0.5rem;
     user-select:none;
     background:
-        linear-gradient(var(--text), var(--text)) padding-box,
-        linear-gradient(
-            135deg,
-            #60a5fa,
-            #8b5cf6,
-            #ec4899
-        ) border-box;
+    linear-gradient(
+        to bottom right,
+        #2e8eff 0%,
+        rgba(46, 142, 255, 0) 30%
+    );
 
     color: white;
-    margin-top: -5rem;
-    transition: transform 300ms ease;
+    transition: all 300ms ease;
+    width:fit-content;
+    margin-bottom: 2rem;
+    position: relative;
 }
 
-.primaryButton:hover {
-    transform: scale(1.05);
+
+primaryButton::after{
+    content: "Upload File";
 }
+.primaryButton:hover {
+  background-color: rgba(46, 142, 255, 0.7);
+  box-shadow: 0 0 10px rgba(46, 142, 255, 0.5);
+  outline: none;
+} */
 
 .avatar {
   width: 24px;
@@ -199,4 +204,77 @@ body{
     height: 100px;
     display:block;
     position: relative;
+}
+
+.heading{
+    color: white;
+    font-size: 2em;
+    font-weight: bold;
+    margin-top: -2rem;
+    /* font-family:'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif; */
+    font-family: "Roboto Condensed"
+}
+
+.hero{
+    display: flex;
+    flex-direction:column;
+    /* gap: 0.5rem; */
+    /* justify-content:space-evenly; */
+    justify-content:center;
+    align-items:center;
+    gap: 1rem;
+    /* flex:1;   */
+}
+
+
+.uploadSpan{
+  background: black;
+  padding: 0.5rem;
+  display: block;
+  border-radius: 0.5rem;
+  color: white;
+  user-select: none;
+}
+
+.primaryButton{
+  width: fit-content;
+  border-radius: 0.5rem;
+  background-color: black;
+  position: relative;
+/*   border: solid 2px yellow; */
+  z-index: 0;
+
+}
+
+.primaryButton::before{
+  content: "";
+/*   border: solid 2px red; */
+  border-radius: 0.5rem;
+  background: linear-gradient(
+    to bottom right,
+    #2e8eff 0%,
+    rgba(46, 142, 255, 0) 30%
+  );
+  background-color: rgba(46, 142, 255, 0.2);
+  position: absolute;
+  inset: -0.1rem;
+  z-index: -1; 
+  transition: all 300ms ease;
+}
+
+.primaryButton:hover::before{
+  background-color: rgba(46, 142, 255, 0.7);
+/*   box-shadow: 0 0 10px rgba(46, 142, 255, 0.5); */
+  box-shadow: 0 0 18px 4px rgba(46, 142, 255, 0.5);
+}
+
+.modal{
+  position:fixed;
+  top:50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  /* border: black dashed 3px; */
+  width: fit-content;
+  padding: 2rem;
+  border-radius: 5px;
 }

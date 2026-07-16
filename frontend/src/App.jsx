@@ -1,93 +1,75 @@
-import { useState, useRef, useEffect } from 'react'
-// import house from './assets/house.jpg'
-// import "./myScript.js";
-import squirtle from './assets/v2p.png'
-// import login from './assets/user.svg'
-const NAVBAR_ITEMS = [{
-  name: "avatar",
-  icon: AvatarIcon
-}];
+import { useState, useEffect, useRef} from 'react'
+import Cookies from 'js-cookie'
+// import squirtle from './assets/v2p.png'
+
 export default function App(){
   return(
     <div className = "min-h-screen flex flex-col">
-      <Header navItems = {NAVBAR_ITEMS}/>
+      <Header/>
       <Content />
-      <Squirtle/>
     </div>
   )
 }
 
-function Squirtle() {
-  // 1. Create a reference directly to the wrapper div
-  const wrapperRef = useRef(null);
-  useEffect(() => {
-    // 2. Define the mouse movement logic
-    const handleMouseMove = (e) => {
-      // Don't do anything if the element isn't rendered yet
-      if (!wrapperRef.current) return;
-      const rect = wrapperRef.current.getBoundingClientRect();
-      const wrapperX = rect["x"];
-      const wrapperY = rect["y"];
-      const imgHeight = rect["height"];
-      const imgWidth = rect["width"];
-    
-      const centerX =  wrapperX + (imgWidth/2);
-      const centerY =  wrapperY + (imgHeight/2);
-
-      const mouseX = e.clientX;
-      const mouseY = e.clientY;
-
-      const wrapperRelativeX = mouseX - centerX;
-      const wrapperRelativeY = mouseY - centerY;
-
-      let radianAngle = Math.atan2(wrapperRelativeY, wrapperRelativeX);
-      if (radianAngle < 0)
-          radianAngle += Math.PI*2;
-      let degAngle = (radianAngle * 180) / Math.PI;
-      degAngle += 45; 
-      wrapperRef.current.style.setProperty("--rotation-angle", `${degAngle}deg`);
-
-    };
-
-    // 4. Add the event listener when the component mounts
-    window.addEventListener("mousemove", handleMouseMove);
-
-    // 5. Clean up the event listener when the component unmounts
-    return () => {
-      window.removeEventListener("mousemove", handleMouseMove);
-    };
-  }, []); // Empty dependency array means this runs once on mount
-
-  return (
-    <div className="derp">
-      {/* Attach the ref to the wrapper */}
-      <div className="wrapper" ref={wrapperRef}>
-          <img src={squirtle} alt="cute squirtle tracking the cursor" className="squirtle"/>
-      </div> 
-    </div>
-  );
-}
-
-function Header({navItems}){
+function Header(){
   return(
     <div className = "header">
-    <NavbarItems navItems = {navItems}/>
+    <NavbarItems/>
     </div>
   )
 }
 
-function NavbarItems({navItems}){
-  const items = navItems.map(item =>
-    <a key={item.name} href="" className = "p-2 h-full flex items-center bounce">
-    {/* <item.icon/> Login */}
+function NavbarItems(){
+
+  const [isLoggedIn,setIsLoggedIn] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isOpen, setIsOpen] = useState(false);
+
+  useEffect(() => {
+    fetch("http://localhost:8000/checkLog", {
+      credentials: "include"
+    })
+    .then(response => response.json())
+    .then(answer => {
+      setIsLoggedIn(answer.isLoggedIn);
+      setIsLoading(false);
+    })
+  }, [])
+
+  
+  if (isLoading)
+    {
+      return(<p>Loading...</p>);
+    }
+  const currentNavItems = [
+      { name: isLoggedIn ? "Logout" : "Login", link: isLoggedIn ? "http://localhost:8000/logout" : "http://localhost:8000/login" },
+      { name: "Payment", link: "/pay" }
+    ];
+
+  const items = currentNavItems.map(item =>
+    {
+      if(item.name == "Login")
+        return <a key={item.name} href="#" onClick = {() => setIsOpen(true)}className = "p-2 h-full flex items-center bounce">
+          {item.name}
+        </a>
+      else
+        return <a key={item.name} href={item.link} className = "p-2 h-full flex items-center bounce">
+      {item.name}
     </a>
+    }
   )
+
+  console.log("Status verified!")
+    
   return(
       <>
         {items}
+        <Modal isOpen = {isOpen} onChange = {isLoggedIn} onClose = {() => setIsOpen(false)}></Modal>
       </>
   )
 }
+
+
 function Content(){
   const [image, setImage] = useState(null);
   const [text, setText] = useState("Lorem, ipsum dolor sit amet consectetur adipisicing elit. Consectetur, blanditiis delectus. Facilis saepe voluptate mollitia, minima repellat repellendus nam recusandae doloribus neque perspiciatis, dolorem voluptas.");
@@ -119,7 +101,6 @@ function Content(){
   }
 
   return(
-    // <div className="flex flex-col sm:flex-row items-center jusitfy-center flex-1">
     <div className="defaultMobile">
       <Image image = {image} uploadImage={uploadImage}/>
       <ResultText image = {image} text = {text} loading = {loading}/>
@@ -131,12 +112,14 @@ function Image({image, uploadImage}){
 
   if(!image){
   return(
-    <>
+    <div className = "hero">
+    <h1 className = "heading">Seamlessly convert image to text</h1>
+
     <label  htmlFor="imgUpload" className="primaryButton">
-    Upload file 
+    <span className = "uploadSpan">Upload file</span> 
     </label>
     <input onChange = {uploadImage} type="file" id="imgUpload" className = "hidden"/>
-    </>
+    </div>
   )}
 
   return(
@@ -167,21 +150,53 @@ function ResultText({ image, text, loading }) {
   );
 }
 
-// Content is empty on initial load
+function Modal({ isOpen, onClose, onChange }) { // Added onClose prop so you can close it
+  const dialogRef = useRef(null);
 
+  useEffect(() => {
+    const dialog = dialogRef.current;
+    
+    // If state is open, show the modal
+    if (isOpen && dialog) {
+      dialog.showModal();
+    } 
+    // If state is closed, close the modal
+    else if (!isOpen && dialog) {
+      dialog.close();
+    }
+  }, [isOpen]);
 
-{/* <svg
-	xmlns="http://www.w3.org/2000/svg" style="display: none;">
-  <symbol id="avatar" viewBox="0 0 640 640">
-    <path d="M463 448.2C440.9 409.8 399.4 384 352 384L288 384C240.6 384 199.1 409.8 177 448.2C212.2 487.4 263.2 512 320 512C376.8 512 427.8 487.3 463 448.2zM64 320C64 178.6 178.6 64 320 64C461.4 64 576 178.6 576 320C576 461.4 461.4 576 320 576C178.6 576 64 461.4 64 320zM320 336C359.8 336 392 303.8 392 264C392 224.2 359.8 192 320 192C280.2 192 248 224.2 248 264C248 303.8 280.2 336 320 336z"/>
-  </symbol>
-</svg> */}
-
-function AvatarIcon() {
   return (
-<svg className = "avatar"
-	xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640">
-	<path d="M463 448.2C440.9 409.8 399.4 384 352 384L288 384C240.6 384 199.1 409.8 177 448.2C212.2 487.4 263.2 512 320 512C376.8 512 427.8 487.3 463 448.2zM64 320C64 178.6 178.6 64 320 64C461.4 64 576 178.6 576 320C576 461.4 461.4 576 320 576C178.6 576 64 461.4 64 320zM320 336C359.8 336 392 303.8 392 264C392 224.2 359.8 192 320 192C280.2 192 248 224.2 248 264C248 303.8 280.2 336 320 336z"/>
-</svg>
+    <dialog ref={dialogRef} className="modal">
+      <form method="POST" onSubmit = {(e) => loginReq(e, onChange)} >
+      <input type="text" placeholder = "Username" name = "username"/>
+      <br />
+      <input type="password"  placeholder = "Password" name = "password"/>
+      <br />
+      <button type="submit">Submit</button>
+      </form>
+      {/* Example of how to close it */}
+      <button onClick={onClose} className="mt-4 border p-2">Close</button>
+    </dialog>
   );
+}
+
+async function loginReq(e, setLogin)
+{
+  e.preventDefault();
+  const csrftoken = Cookies.get('csrftoken');
+  const response = await fetch("http://localhost:8000/login/", {
+    credentials: "include",
+    method: "POST",
+    headers:{'X-CSRFToken': csrftoken, 'Content-Type': 'application/json'},
+    body: JSON.stringify({username: e.target.username.value, password: e.target.password.value})
+  });
+  const statusCode = response.status;
+  const result = await response.json();
+  if (statusCode == 200 )
+    setLogin(true)
+  else
+    setLogin(false)
+  console.log(result);
+  return;
 }

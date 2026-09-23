@@ -2,7 +2,19 @@ from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login, logout
 from ocr.serializers import UserSerializer
 from rest_framework.decorators import api_view
+from django.views.decorators.csrf import csrf_protect, ensure_csrf_cookie
 from rest_framework.response import Response
+from serializers import LoginSerializer
+
+
+
+@ensure_csrf_cookie
+@api_view(['GET'])
+def get_csrf(request):
+    return Response(
+        {"message": "CSRF Token set"}
+    )
+
 
 @api_view(['GET'])
 def checkLog(request):
@@ -13,23 +25,48 @@ def checkLog(request):
         return Response({"isLoggedIn": False})
     
 
-@api_view(['POST'])
+@api_view(["POST"])
+@csrf_protect
 def logIn(request):
-    username = request.data["username"]
-    password = request.data["password"]
+    serializer = LoginSerializer(data=request.data)
+    serializer.is_valid(raise_exception=True)
 
-    user = authenticate(request, username=username, password=password)
+    user = authenticate(
+        request,
+        username=serializer.validated_data["username"],
+        password=serializer.validated_data["password"]
+    )
 
-    if user is not None:
-        login(request, user)
-        return Response({"message": "Authentication successful."}, status=200)
+    if user is None:
+        return Response(
+            {"message": "Invalid credentials."},
+            status=401
+        )
 
-    else:
-        return Response({"message": "Invalid credentials. Please try again"}, status=401)
+    login(request, user)
 
+    return Response(
+        {"message": "Authentication successful."}
+    )
+
+
+@api_view(["POST"])
+def sign_up(request):
+    serializer = LoginSerializer(data=request.data)
+    serializer.is_valid(raise_exception=True)
+
+
+
+    User.objects.create_user(
+        username=serializer.validated_data["username"],
+        password=serializer.validated_data["password"])
+
+    return Response(
+        {"message": "Account created successfully"}
+    )
+    
 
 @api_view(['GET'])
 def logOut(request):
     logout(request)
     return Response({"message": "Logged out successfully"}, status = 200)
-

@@ -23,6 +23,8 @@ urlpatterns = [
     path("api/", include("api.urls")),
     path("checkLog/", views.checkLog),
     path("login/", views.logIn),
-    path("logout/", views.logOut)
+    path("logout/", views.logOut),
+    path("signup/", views.sign_up),
+    path("csrf/", views.get_csrf)
     # path("login/", views.login)
 ]

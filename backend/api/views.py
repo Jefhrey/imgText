@@ -8,7 +8,7 @@ def ocr_space(image_file):
         "https://api.ocr.space/parse/image",
         files={"file": image_file},
         data={
-            "apikey": "K88349390888957",
+            "apikey": "K88349390888957", 
             "language": "eng",
         },
     )

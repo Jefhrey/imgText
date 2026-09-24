@@ -1,10 +1,10 @@
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login, logout
-from ocr.serializers import UserSerializer
 from rest_framework.decorators import api_view
 from django.views.decorators.csrf import csrf_protect, ensure_csrf_cookie
 from rest_framework.response import Response
-from serializers import LoginSerializer
+from rest_framework import status
+from .serializers import LoginSerializer, SignUpSerializer
 
 
 
@@ -39,7 +39,7 @@ def logIn(request):
 
     if user is None:
         return Response(
-            {"message": "Invalid credentials."},
+            {"message": ["Invalid credentials."]},
             status=401
         )
 
@@ -49,24 +49,25 @@ def logIn(request):
         {"message": "Authentication successful."}
     )
 
-
 @api_view(["POST"])
+@csrf_protect
 def sign_up(request):
-    serializer = LoginSerializer(data=request.data)
+    serializer = SignUpSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
 
-
-
-    User.objects.create_user(
+    user = User.objects.create_user(
         username=serializer.validated_data["username"],
         password=serializer.validated_data["password"])
 
+    login(request, user)
+
     return Response(
-        {"message": "Account created successfully"}
+        {"message": "Account created successfully"},
+        status=status.HTTP_201_CREATED
     )
     
-
-@api_view(['GET'])
+@api_view(['POST'])
+@csrf_protect
 def logOut(request):
     logout(request)
     return Response({"message": "Logged out successfully"}, status = 200)

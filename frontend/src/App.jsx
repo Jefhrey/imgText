@@ -3,6 +3,12 @@ import Cookies from 'js-cookie'
 // import squirtle from './assets/v2p.png'
 
 export default function App(){
+
+  useEffect(() => {
+    fetch("http://localhost:8000/csrf", {
+      credentials: "include"
+    }).then(() => console.log("CSRF fetched successfully"));
+  }, [])
   return(
     <div className = "min-h-screen flex flex-col">
       <Header/>
@@ -49,12 +55,12 @@ function NavbarItems(){
   const items = currentNavItems.map(item =>
     {
       if(item.name == "Login")
-        return <a key={item.name} href="#" onClick = {() => setIsOpen(true)}className = "p-2 h-full flex items-center bounce">
+        return <a key={item.name} href="#" onClick = {() => setIsOpen(true)}className = "p-2 h-full flex items-center bounce text-black">
           {item.name}
         </a>
-      else
-        return <a key={item.name} href={item.link} className = "p-2 h-full flex items-center bounce">
-      {item.name}
+      else if(item.name == "Logout")
+        return <a key={item.name} href="#" onClick = {(e) => logout(e,setIsLoggedIn)}className = "p-2 h-full flex items-center bounce cust">
+          {item.name}
     </a>
     }
   )
@@ -64,7 +70,7 @@ function NavbarItems(){
   return(
       <>
         {items}
-        <Modal isOpen = {isOpen} onChange = {isLoggedIn} onClose = {() => setIsOpen(false)}></Modal>
+        <Modal isOpen = {isOpen} onChange = {setIsLoggedIn} onClose = {() => setIsOpen(false)}></Modal>
       </>
   )
 }
@@ -150,8 +156,10 @@ function ResultText({ image, text, loading }) {
   );
 }
 
-function Modal({ isOpen, onClose, onChange }) { // Added onClose prop so you can close it
+function Modal({ isOpen, onClose, onChange}) { // Added onClose prop so you can close it
   const dialogRef = useRef(null);
+  const [isLoginMode,setIsLoginMode] = useState(true);
+  const [error, setError] = useState("");
 
   useEffect(() => {
     const dialog = dialogRef.current;
@@ -166,22 +174,79 @@ function Modal({ isOpen, onClose, onChange }) { // Added onClose prop so you can
     }
   }, [isOpen]);
 
+  const fxn = isLoginMode ? loginReq : signupReq;
+  const msg = isLoginMode ? "New user? Sign up here" : "Already registered? Login here";
+  const btnText = isLoginMode ? "Login" : "Sign up";
+
+
+  async function submit(e) {
+    e.preventDefault();
+
+    setError("");
+
+    await fxn(e, onChange,onClose, setError);
+  }
+
+
   return (
     <dialog ref={dialogRef} className="modal">
-      <form method="POST" onSubmit = {(e) => loginReq(e, onChange)} >
+      <form method="POST" onSubmit = {(e) => submit(e)} >
       <input type="text" placeholder = "Username" name = "username"/>
       <br />
       <input type="password"  placeholder = "Password" name = "password"/>
       <br />
-      <button type="submit">Submit</button>
+      <button type="submit">{btnText}</button>
+
+      {error && (<p className="text-red-500">{error}</p>) }
       </form>
       {/* Example of how to close it */}
+      <a href= "#" onClick={() => setIsLoginMode(!isLoginMode)}>{msg}</a>
+      <br />
       <button onClick={onClose} className="mt-4 border p-2">Close</button>
     </dialog>
   );
 }
 
-async function loginReq(e, setLogin)
+
+
+
+// function Modal({ isOpen, onClose, onChange, loginMode }) { // Added onClose prop so you can close it
+//   const dialogRef = useRef(null);
+
+//   useEffect(() => {
+//     const dialog = dialogRef.current;
+    
+//     // If state is open, show the modal
+//     if (isOpen && dialog) {
+//       dialog.showModal();
+//     } 
+//     // If state is closed, close the modal
+//     else if (!isOpen && dialog) {
+//       dialog.close();
+//     }
+//   }, [isOpen]);
+
+//   if(loginMode)
+//   { 
+//     return (
+//       <dialog ref={dialogRef} className="modal">
+//         <form method="POST" onSubmit = {(e) => loginReq(e, onChange)} >
+//         <input type="text" placeholder = "Username" name = "username"/>
+//         <br />
+//         <input type="password"  placeholder = "Password" name = "password"/>
+//         <br />
+//         <button type="submit">Login</button>
+//         </form>
+//         {/* Example of how to close it */}
+//         <a href="#" onClick={() => }>New user? Sign up here</a>
+//         <br />
+//         <button onClick={onClose} className="mt-4 border p-2">Close</button>
+//       </dialog>
+//     );
+//   }
+// }
+
+async function loginReq(e, setLogin, closeModal, setError)
 {
   e.preventDefault();
   const csrftoken = Cookies.get('csrftoken');
@@ -191,12 +256,67 @@ async function loginReq(e, setLogin)
     headers:{'X-CSRFToken': csrftoken, 'Content-Type': 'application/json'},
     body: JSON.stringify({username: e.target.username.value, password: e.target.password.value})
   });
-  const statusCode = response.status;
+  // const statusCode = response.status;
   const result = await response.json();
-  if (statusCode == 200 )
+  if (response.ok)
+  {
     setLogin(true)
+    closeModal()
+  }
   else
+  {
     setLogin(false)
+    const errorMessage = Object.values(result)[0][0]
+    setError(errorMessage)
+    
+  }
   console.log(result);
+  return;
+}
+
+
+async function signupReq(e, setLogin, closeModal, setError)
+{
+  e.preventDefault();
+  const csrftoken = Cookies.get('csrftoken');
+  const response = await fetch("http://localhost:8000/signup/", {
+    credentials: "include",
+    method: "POST",
+    headers:{'X-CSRFToken': csrftoken, 'Content-Type': 'application/json'},
+    body: JSON.stringify({username: e.target.username.value, password: e.target.password.value})
+  });
+  // const statusCode = response.status;
+  const result = await response.json();
+  if (response.ok)
+  {
+    setLogin(true)
+    closeModal()
+  }
+  else
+  {
+    setLogin(false)
+    const errorMessage = Object.values(result)[0][0]
+    setError(errorMessage)
+    
+  }
+  console.log(result);
+  return;
+}
+
+
+async function logout(e, setIsLoggedIn)
+{
+  e.preventDefault();
+  const csrftoken = Cookies.get('csrftoken');
+  const response = await fetch("http://localhost:8000/logout/", {
+    credentials: "include",
+    method: "POST",
+    headers:{'X-CSRFToken': csrftoken, 'Content-Type': 'application/json'}
+  });
+  // const statusCode = response.status;
+  // const result = await response.json();
+  if (response.ok)
+    setIsLoggedIn(false)
+  // console.log(result);
   return;
 }

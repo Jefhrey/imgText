@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 
     "api",
+    "ocr",
     "rest_framework",
     "corsheaders",
     'rest_framework.authtoken'
@@ -131,3 +132,6 @@ CORS_ALLOW_CREDENTIALS = True
 CSRF_TRUSTED_ORIGINS = [
     "http://localhost:5173",
 ]
+
+
+AUTH_USER_MODEL = "ocr.User"

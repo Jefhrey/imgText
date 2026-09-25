@@ -1,4 +1,5 @@
-from django.contrib.auth.models import User
+# from django.contrib.auth.models import User
+from .models import User
 from django.contrib.auth import authenticate, login, logout
 from rest_framework.decorators import api_view
 from django.views.decorators.csrf import csrf_protect, ensure_csrf_cookie

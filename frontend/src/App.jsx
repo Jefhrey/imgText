@@ -59,7 +59,7 @@ function NavbarItems(){
           {item.name}
         </a>
       else if(item.name == "Logout")
-        return <a key={item.name} href="#" onClick = {(e) => logout(e,setIsLoggedIn)}className = "p-2 h-full flex items-center bounce cust">
+        return <a key={item.name} href="#" onClick = {(e) => logout(e,setIsLoggedIn)}className = "p-2 h-full flex items-center bounce text-black">
           {item.name}
     </a>
     }

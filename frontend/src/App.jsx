@@ -32,7 +32,7 @@ function NavbarItems(){
   const [isOpen, setIsOpen] = useState(false);
 
   useEffect(() => {
-    fetch("http://localhost:8000/checkLog", {
+    fetch("http://localhost:8000/checklog/", {
       credentials: "include"
     })
     .then(response => response.json())
@@ -186,23 +186,29 @@ function Modal({ isOpen, onClose, onChange}) { // Added onClose prop so you can 
 
     await fxn(e, onChange,onClose, setError);
   }
-
+  
+  
+  function handleDialogClick(e) {
+    if (e.target === e.currentTarget) {
+      onClose();
+    }
+  }
 
   return (
-    <dialog ref={dialogRef} className="modal">
+    <dialog ref={dialogRef} className="modal" onClick={handleDialogClick}>
       <form method="POST" onSubmit = {(e) => submit(e)} >
-      <input type="text" placeholder = "Username" name = "username"/>
-      <br />
-      <input type="password"  placeholder = "Password" name = "password"/>
-      <br />
-      <button type="submit">{btnText}</button>
+      <input type="text" placeholder = "Username" name = "username" className='block mx-auto w-fit my-1 bg-gray-200 rounded-sm p-2'/>
+      {/* <br /> */}
+      <input type="password"  placeholder = "Password" name = "password" className='block mx-auto w-fit my-2 bg-gray-200 rounded-sm p-2'/>
+      {/* <br /> */}
+      <button type="submit" className="p-2 block mx-auto bg-blue-300 rounded-sm">{btnText}</button>
 
       {error && (<p className="text-red-500">{error}</p>) }
       </form>
       {/* Example of how to close it */}
-      <a href= "#" onClick={() => setIsLoginMode(!isLoginMode)}>{msg}</a>
-      <br />
-      <button onClick={onClose} className="mt-4 border p-2">Close</button>
+      <a href= "#" onClick={() => setIsLoginMode(!isLoginMode)} className='block mx-auto w-fit my-2 color-gray-300'>{msg}</a>
+      {/* <br /> */}
+      {/* <button onClick={onClose} className="border p-2 block mx-auto">Close</button> */}
     </dialog>
   );
 }

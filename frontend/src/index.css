@@ -270,11 +270,13 @@ primaryButton::after{
 
 .modal{
   position:fixed;
-  top:50%;
+  top:40%;
   left: 50%;
   transform: translate(-50%, -50%);
   /* border: black dashed 3px; */
-  width: fit-content;
-  padding: 2rem;
+  /* width: fit-content; */
+  width: 25vw;
+  /* height: 30vh; */
+  padding: 1rem;
   border-radius: 5px;
 }
